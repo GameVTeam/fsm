@@ -13,7 +13,7 @@ ENDIF ()
 INCLUDE_DIRECTORIES(include)
 
 ADD_LIBRARY(fsm include/fsm/fsm.h include/fsm/event.h include/fsm/error.h
-			examples/simple.cc src/fsm.cc src/event.cc)
+			src/fsm.cc src/event.cc)
 
 IF (BUILD_EXAMPLES)
 	ADD_EXECUTABLE(simple examples/simple.cc)
