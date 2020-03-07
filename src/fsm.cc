@@ -116,8 +116,8 @@ std::optional<std::shared_ptr<Error>> FSM::FireEvent(const std::string &event,
 
   if (current_ == dst) {
 	AfterEventCallbacks(eventObj);
-	return {};
-	//return std::make_shared<NoTransitionError>(eventObj.error_ ? eventObj.error_.value() : nullptr);
+	//return {};
+	return std::make_shared<NoTransitionError>(eventObj.error_ ? eventObj.error_.value() : nullptr);
   }
 
   // Setup the transition, call it later.

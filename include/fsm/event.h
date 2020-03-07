@@ -53,7 +53,7 @@ class Event {
   // Cancel can be called in before_<EVENT> or leave_<State> to cancel the
   // current transition before it happens. It takes an optional error, which will
   // overwrite error_ if set before.
-  void Cancel(const std::vector<std::shared_ptr<Error>> &errors) noexcept;
+  void Cancel(const std::vector<std::shared_ptr<Error>> &errors = {}) noexcept;
 
   // Async can be called in leave_<STATE> to do an asynchronous state transition.
   //
