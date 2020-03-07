@@ -3,6 +3,13 @@ PROJECT(fsm)
 
 SET(CMAKE_CXX_STANDARD 17)
 
+IF (EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+	INCLUDE(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+	CONAN_BASIC_SETUP()
+ELSE ()
+	MESSAGE(WARNING "The file conanbuildinfo.cmake doesn't exist, you have to run conan install first")
+ENDIF ()
+
 INCLUDE_DIRECTORIES(include)
 
 ADD_LIBRARY(fsm include/fsm/fsm.h include/fsm/event.h include/fsm/error.h
