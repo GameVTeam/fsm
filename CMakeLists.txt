@@ -24,3 +24,12 @@ IF (BUILD_EXAMPLES)
 	TARGET_LINK_LIBRARIES(alternative fsm)
 	TARGET_LINK_LIBRARIES(struct fsm)
 ENDIF ()
+
+IF (BUILD_TESTS)
+	ENABLE_TESTING()
+
+	ADD_EXECUTABLE(fsm_test tests/fsm_test.cc)
+	TARGET_LINK_LIBRARIES(fsm_test fsm gtest_maind gtestd)
+
+	ADD_TEST(NAME FSM_TEST COMMAND fsm_test)
+ENDIF ()

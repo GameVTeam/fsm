@@ -116,6 +116,9 @@ using Events=std::vector<EventDesc>;
 class FSM {
  private:
   friend class impl::TransitionerClass;
+#ifdef TESTING
+  friend class FSMTestGroup;
+#endif
  private:
   // current_ is the state that the FSM is currently in.
   std::string current_;
