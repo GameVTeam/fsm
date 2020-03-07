@@ -57,9 +57,7 @@ class CKey {
   // callback_type_ is the situation when the callback will be run.
   CallbackType callback_type_;
 
-  bool operator==(const CKey &other) const noexcept {
-	return target_ == other.target_ && callback_type_ == other.callback_type_;
-  }
+  bool operator==(const CKey &other) const noexcept;
 
   // Hasher implements hash function to use std::unordered_map
   class Hasher {
