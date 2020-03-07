@@ -300,5 +300,9 @@ size_t EKey::Hasher::operator()(const EKey &key) const noexcept(false) {
   return (std::hash<std::string>()(key.event_) ^ (std::hash<std::string>()(key.src_) << 1)) >> 1;
 }
 #pragma clang diagnostic pop
+
+bool CKey::operator==(const CKey &other) const noexcept {
+  return target_ == other.target_ && callback_type_ == other.callback_type_;
+}
 }
 }
