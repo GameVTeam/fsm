@@ -87,7 +87,7 @@ std::optional<std::shared_ptr<Error>> FSM::FireEvent(const std::string &event,
   RLockGuard state_mu_guard(state_mu_);
 
   if (transition_)
-	return std::make_shared<InTransition>(event);
+	return std::make_shared<InTransitionError>(event);
 
   auto iter = transitions_.find(impl::EKey{
 	  .event_=event,

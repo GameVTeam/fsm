@@ -2,6 +2,9 @@
 // Created by 方泓睿 on 2020/3/7.
 //
 
+#include <thread>
+#include <atomic>
+
 #include <gtest/gtest.h>
 
 #include <fsm/fsm.h>
@@ -287,7 +290,158 @@ TEST_F(FSMTestGroup, TestAsyncTransitionInProgress) {
 	  {
 		  {"leave_start", [&](fsm::Event &event) { event.Async(); }}
 	  });
+  machine.FireEvent("run");
+  auto err = machine.FireEvent("reset");
 
+  if (!err ||
+	  !std::dynamic_pointer_cast<fsm::InTransitionError>(err.value()) ||
+	  std::dynamic_pointer_cast<fsm::InTransitionError>(err.value())->event_ != "reset")
+	FAIL() << "expected state to be start";
+
+  machine.Transition();
+  machine.FireEvent("reset");
+  if (machine.Current() != "start")
+	FAIL() << "expected state to be 'start'";
+}
+
+TEST_F(FSMTestGroup, TestAsyncTransitionNotInprogress) {
+  auto machine = fsm::FSM(
+	  "start",
+	  {
+		  {"run", {"start"}, "end"},
+		  {"reset", {"end"}, "start"},
+	  },
+	  {});
+
+  auto err = machine.Transition();
+  if (!err || !std::dynamic_pointer_cast<fsm::NotInTransitionError>(err.value()))
+	FAIL() << "expected 'NotInTransitionError'";
+}
+
+TEST_F(FSMTestGroup, TestCallbackNoError) {
+  auto machine = fsm::FSM(
+	  "start",
+	  {{"run", {"start"}, "end"}},
+	  {{"run", [&](fsm::Event &) {}}});
+
+  auto err = machine.FireEvent("run");
+  if (err)
+	FAIL() << "expected no error";
+}
+
+TEST_F(FSMTestGroup, TestCallbackError) {
+  auto machine = fsm::FSM(
+	  "start",
+	  {{"run", {"start"}, "end"}},
+	  {{"run", [&](fsm::Event &event) { event.error_ = std::make_shared<FakeError>(); }}});
+
+  auto err = machine.FireEvent("run");
+
+  if (!err || !std::dynamic_pointer_cast<FakeError>(err.value()))
+	FAIL() << "expected error to be 'FakeError'";
+}
+
+TEST_F(FSMTestGroup, TestCallbackArgs) {
+  auto machine = fsm::FSM(
+	  "start",
+	  {{"run", {"start"}, "end"}},
+	  {{"run", [&](fsm::Event &event) {
+		if (event.args_.size() != 1)
+		  FAIL() << "expected args size to be 1";
+		std::string arg{};
+		try {
+		  arg = std::any_cast<std::string>(event.args_[0]);
+		} catch (...) {
+		  FAIL() << "not a string argument";
+		}
+		if (arg != "test")
+		  FAIL() << "incorrect argument";
+	  }}});
+
+  machine.FireEvent("run", {std::string("test")});
+}
+
+TEST_F(FSMTestGroup, TestNoDeadLock) {
+  fsm::FSM *machine;
+  machine = new fsm::FSM(
+	  "start",
+	  {{"run", {"start"}, "end"}},
+	  {{"run", [&](fsm::Event &) {
+		machine->Current(); // should not result in dead lock
+	  }}});
+
+  machine->FireEvent("run");
+
+  delete machine;
+}
+
+TEST_F(FSMTestGroup, TestThreadSafteyRaceCondition) {
+  auto machine = fsm::FSM(
+	  "start",
+	  {{"run", {"start"}, "end"}},
+	  {{"run", [&](fsm::Event &) {}}});
+
+  auto thread = std::thread([&]() {
+	machine.Current();
+  });
+
+  // TODO complex condition
+
+  auto err = machine.FireEvent("run");
+
+  thread.join();
+
+  if (err)
+	FAIL() << "not thread safety";
+}
+
+TEST_F(FSMTestGroup, TestDoubleTransition) {
+  fsm::FSM *machine;
+
+  std::atomic<int> wait_group(2);
+
+  machine = new fsm::FSM(
+	  "start",
+	  {{"run", {"start"}, "end"}},
+	  {
+		  {
+			  "before_run", [&](fsm::Event &event) {
+
+			wait_group--;
+			// Imagine a concurrent event coming in of the same type while
+			// the data access mutex is unlocked because the current transition
+			// is running is event callbacks, getting around the "active"
+			// transition checks.
+			if (event.args_.empty()) {
+			  // Must be concurrent so the test may pass when we add a mutex that synchronizes
+			  // calls to Event(...). It will then fail as an inappropriate transition as we
+			  // have changed state.
+			  std::thread([&]() {
+				machine->FireEvent("run", {"second run"}); // should fail
+				wait_group--;
+			  }).detach();
+			} else {
+			  FAIL() << "was able to reissue an event mid-transition";
+			}
+		  }
+		  }
+	  }
+  );
+
+  machine->FireEvent("run");
+
+  while (wait_group);
+
+  delete machine;
+}
+
+TEST_F(FSMTestGroup, TestNoTransition) {
+  auto machine = fsm::FSM("start",
+						  {{"run", {"start"}, "start"}});
+
+  auto err = machine.FireEvent("run");
+  if (!err || !std::dynamic_pointer_cast<fsm::NoTransitionError>(err.value()))
+	FAIL() << "expected 'NoTransitionError'";
 }
 
 #pragma clang diagnostic pop

@@ -29,10 +29,10 @@ class Error {
 
 // InTransitionError is returned by FSM.Event() when an asynchronous transition
 // is already in progress.
-class InTransition : public Error {
+class InTransitionError : public Error {
  public:
-  explicit InTransition(std::string event) : event_(std::move(event)) {}
- private:
+  explicit InTransitionError(std::string event) : event_(std::move(event)) {}
+
   std::string event_;
 
   [[nodiscard]] std::string What() const noexcept(false) override {
