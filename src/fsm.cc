@@ -8,7 +8,7 @@ namespace fsm {
 FSM::FSM(std::string initial,
 		 const std::vector<fsm::EventDesc> &events,
 		 const std::unordered_map<std::string, std::function<void(Event &)>> &callbacks) noexcept(false)
-	: current_(std::move(initial)), transitionObj_(std::make_shared<impl::TransitionerClass>()) {
+	: current_(std::move(initial)), transition_obj_(std::make_shared<impl::TransitionerClass>()) {
   // Build transition map and store sets of all events and states.
   std::unordered_map<std::string, bool> all_events{}, all_states{};
   for (const auto &event:events) {
@@ -191,7 +191,7 @@ std::optional<std::shared_ptr<Error>> FSM::Transition() noexcept(false) {
 }
 
 std::optional<std::shared_ptr<Error>> FSM::DoTransition() noexcept(false) {
-  return transitionObj_->Transition(*this);
+  return transition_obj_->Transition(*this);
 }
 
 void FSM::AfterEventCallbacks(Event &event) noexcept(false) {

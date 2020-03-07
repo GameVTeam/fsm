@@ -2,10 +2,10 @@
 // Created by 方泓睿 on 2020/3/7.
 //
 
-#include <fsm/fsm.h>
-
 #include <utility>
 #include <iostream>
+
+#include <fsm/fsm.h>
 
 class Door {
  public:

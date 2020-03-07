@@ -2,9 +2,9 @@
 // Created by 方泓睿 on 2020/3/7.
 //
 
-#include <fsm/fsm.h>
-
 #include <iostream>
+
+#include <fsm/fsm.h>
 
 int main() noexcept(false) {
   auto machine = fsm::FSM(

@@ -5,9 +5,6 @@
 #ifndef FSM__FSM_H_
 #define FSM__FSM_H_
 
-#include "error.h"
-#include "event.h"
-
 #include <string>
 #include <memory>
 #include <optional>
@@ -17,6 +14,11 @@
 #include <vector>
 #include <mutex>
 #include <shared_mutex>
+
+#include "error.h"
+#include "event.h"
+
+class FSMTestGroup;
 
 namespace fsm {
 class FSM;
@@ -116,9 +118,7 @@ using Events=std::vector<EventDesc>;
 class FSM {
  private:
   friend class impl::TransitionerClass;
-#ifdef TESTING
   friend class FSMTestGroup;
-#endif
  private:
   // current_ is the state that the FSM is currently in.
   std::string current_;
@@ -133,8 +133,8 @@ class FSM {
   // or when transition is called in an asynchronous state transition.
   std::function<void()> transition_{};
 
-  // transitionObj_ calls the FSM::Transition() function.
-  std::shared_ptr<impl::Transitioner> transitionObj_;
+  // transition_obj_ calls the FSM::Transition() function.
+  std::shared_ptr<impl::Transitioner> transition_obj_;
 
   // event_mu_ guards access to Event() and Transition().
   std::mutex event_mu_{};
