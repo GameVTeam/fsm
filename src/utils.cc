@@ -28,7 +28,7 @@ class MermaidVisualizer : public Visualizer {
 
 	std::stringstream buffer{};
 
-	buffer << "graph fsm" << std::endl;
+	buffer << "graph TD" << std::endl;
 
 	for (const auto &key:sorted_e_keys) {
 	  auto val = machine.transitions_[key];

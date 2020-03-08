@@ -262,6 +262,7 @@ class FSM {
 												  std::vector<std::any> args = {}) noexcept(false);
 
   // Visualize outputs a visualization of this FSM in the desired format.
+  // Note that this facility is not thread safety.
   VisualizeResult Visualize(VisualizeType visualize_type = VisualizeType::kGraphviz) noexcept(false);
  private:
   // DoTransition wraps impl::Transitioner::Transition.
