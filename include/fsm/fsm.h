@@ -15,8 +15,9 @@
 #include <mutex>
 #include <shared_mutex>
 
-#include "error.h"
-#include "event.h"
+#include "errors.h"
+#include "events.h"
+#include "utils.h"
 
 class FSMTestGroup;
 
@@ -118,7 +119,8 @@ using Events=std::vector<EventDesc>;
 class FSM {
  private:
   friend class impl::TransitionerClass;
-  friend class FSMTestGroup;
+  friend class MermaidVisualizer;
+  friend class GraphvizVisualizer;
  private:
   // current_ is the state that the FSM is currently in.
   std::string current_;
@@ -259,6 +261,8 @@ class FSM {
   std::optional<std::shared_ptr<Error>> FireEvent(const std::string &event,
 												  std::vector<std::any> args = {}) noexcept(false);
 
+  // Visualize outputs a visualization of this FSM in the desired format.
+  VisualizeResult Visualize(VisualizeType visualize_type = VisualizeType::kGraphviz) noexcept(false);
  private:
   // DoTransition wraps impl::Transitioner::Transition.
   std::optional<std::shared_ptr<Error>> DoTransition() noexcept(false);

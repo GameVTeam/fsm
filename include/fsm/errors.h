@@ -127,5 +127,12 @@ class InternalError : public Error {
 	return "internal error on state transition";
   }
 };
+
+class UnknownVisualizeTypeError : public Error {
+ public:
+  [[nodiscard]] std::string What() const noexcept(false) override {
+	return "unknown visualize type";
+  }
+};
 }
 #endif //FSM__ERROR_H_

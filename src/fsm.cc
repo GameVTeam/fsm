@@ -272,6 +272,10 @@ std::optional<std::shared_ptr<Error> > FSM::BeforeEventCallbacks(Event &event) n
   return {};
 }
 
+VisualizeResult FSM::Visualize(VisualizeType visualize_type) noexcept(false) {
+  return ::fsm::Visualize(*this, visualize_type);
+}
+
 namespace impl {
 std::optional<std::shared_ptr<Error> > TransitionerClass::Transition(FSM &machine) noexcept(false) {
   if (!machine.transition_) {
