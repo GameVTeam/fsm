@@ -6,7 +6,7 @@
 
 #include <fsm/fsm.h>
 
-auto main() -> int {
+int main() noexcept(false) {
   auto machine = fsm::FSM("start",
 						  {
 							  {"first", {"start"}, "one"},
