@@ -23,11 +23,13 @@ IF (BUILD_EXAMPLES)
 	ADD_EXECUTABLE(alternative examples/alternative.cc)
 	ADD_EXECUTABLE(struct examples/struct.cc)
 	ADD_EXECUTABLE(graph examples/graph.cc)
+	ADD_EXECUTABLE(async examples/async.cc)
 
 	TARGET_LINK_LIBRARIES(simple ${FSM_LIB})
 	TARGET_LINK_LIBRARIES(alternative ${FSM_LIB})
 	TARGET_LINK_LIBRARIES(struct ${FSM_LIB})
 	TARGET_LINK_LIBRARIES(graph ${FSM_LIB})
+	TARGET_LINK_LIBRARIES(async ${FSM_LIB})
 ENDIF ()
 
 IF (BUILD_TESTS)

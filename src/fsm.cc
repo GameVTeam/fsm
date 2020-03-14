@@ -94,34 +94,34 @@ std::optional<std::shared_ptr<Error>> FSM::FireEvent(const std::string &event,
 
   auto &dst = iter->second;
 
-  auto eventObj = Event(*this);
-  eventObj.event_ = event;
-  eventObj.args_ = std::move(args);
-  eventObj.src_ = current_;
-  eventObj.dst_ = dst;
+  auto event_obj = std::make_shared<Event>(*this);
+  event_obj->event_ = event;
+  event_obj->args_ = std::move(args);
+  event_obj->src_ = current_;
+  event_obj->dst_ = dst;
 
-  auto err = BeforeEventCallbacks(eventObj);
+  auto err = BeforeEventCallbacks(*event_obj);
 
   if (err)
 	return err;
 
   if (current_ == dst) {
-	AfterEventCallbacks(eventObj);
+	AfterEventCallbacks(*event_obj);
 	//return {};
-	return std::make_shared<NoTransitionError>(eventObj.error_ ? eventObj.error_.value() : nullptr);
+	return std::make_shared<NoTransitionError>(event_obj->error_ ? event_obj->error_.value() : nullptr);
   }
 
   // Setup the transition, call it later.
-  transition_ = [&]() {
+  transition_ = [=]() {
 	state_mu_.lock();
 	current_ = dst;
 	state_mu_.unlock();
 
-	EnterStateCallbacks(eventObj);
-	AfterEventCallbacks(eventObj);
+	EnterStateCallbacks(*event_obj);
+	AfterEventCallbacks(*event_obj);
   };
 
-  err = LeaveStateCallbacks(eventObj);
+  err = LeaveStateCallbacks(*event_obj);
 
   if (err) {
 	if (std::dynamic_pointer_cast<CanceledError>(err.value()) != nullptr)
@@ -137,7 +137,7 @@ std::optional<std::shared_ptr<Error>> FSM::FireEvent(const std::string &event,
   if (err)
 	return std::make_shared<InternalError>();
 
-  return eventObj.error_;
+  return event_obj->error_;
 }
 
 std::string FSM::Current() noexcept(false) {
