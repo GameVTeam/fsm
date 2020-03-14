@@ -34,7 +34,7 @@ IF (BUILD_TESTS)
 	ENABLE_TESTING()
 
 	ADD_EXECUTABLE(fsm_test tests/fsm_tests.cc)
-	IF (MSVC)
+	IF (MSVC OR NOT APPLE)
 		TARGET_LINK_LIBRARIES(fsm_test ${FSM_LIB} gtest_main gtest)
 	ELSE ()
 		TARGET_LINK_LIBRARIES(fsm_test ${FSM_LIB} gtest_maind gtestd)
