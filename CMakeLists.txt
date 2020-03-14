@@ -16,7 +16,7 @@ ADD_LIBRARY(fsm include/fsm/fsm.h include/fsm/events.h include/fsm/errors.h
 			src/fsm.cc src/events.cc include/fsm/utils.h src/utils.cc)
 
 FIND_PACKAGE(Threads REQUIRED)
-SET(FSM_LIB ${CMAKE_THREAD_LIBS_INIT} fsm)
+SET(FSM_LIB ${CMAKE_THREAD_LIBS_INIT} fsm ${CMAKE_THREAD_LIBS_INIT})
 
 IF (BUILD_EXAMPLES)
 	ADD_EXECUTABLE(simple examples/simple.cc)
