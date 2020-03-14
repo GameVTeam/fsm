@@ -13,10 +13,7 @@ FSM::FSM(std::string initial,
   std::unordered_map<std::string, bool> all_events{}, all_states{};
   for (const auto &event:events) {
 	for (const auto &src:event.src_) {
-	  transitions_[impl::EKey{
-		  .event_=event.name_,
-		  .src_=src,
-	  }] = event.dst_;
+	  transitions_[impl::EKey{event.name_, src}] = event.dst_;
 	  all_states[src] = true;
 	  all_states[event.dst_] = true;
 	}
@@ -74,10 +71,7 @@ FSM::FSM(std::string initial,
 	}
 
 	if (callback_type != impl::CallbackType::kNone)
-	  callbacks_[impl::CKey{
-		  .target_=target,
-		  .callback_type_=callback_type,
-	  }] = fn;
+	  callbacks_[impl::CKey{target, callback_type}] = fn;
   }
 }
 
@@ -89,10 +83,7 @@ std::optional<std::shared_ptr<Error>> FSM::FireEvent(const std::string &event,
   if (transition_)
 	return std::make_shared<InTransitionError>(event);
 
-  auto iter = transitions_.find(impl::EKey{
-	  .event_=event,
-	  .src_=current_,
-  });
+  auto iter = transitions_.find(impl::EKey{event, current_});
 
   if (iter == transitions_.end()) {
 	for (const auto &ekv:transitions_)
@@ -166,10 +157,7 @@ void FSM::SetState(std::string state) noexcept(false) {
 
 bool FSM::Can(const std::string &event) noexcept(false) {
   RLockGuard guard(state_mu_);
-  return transitions_.find(impl::EKey{
-	  .event_ = event,
-	  .src_ = current_,
-  }) != transitions_.end() && !transition_;
+  return transitions_.find(impl::EKey{event, current_}) != transitions_.end() && !transition_;
 }
 
 bool FSM::Cannot(const std::string &event) noexcept(false) {
@@ -197,14 +185,13 @@ std::optional<std::shared_ptr<Error>> FSM::DoTransition() noexcept(false) {
 void FSM::AfterEventCallbacks(Event &event) noexcept(false) {
   auto iter = callbacks_.end();
   if ((iter = callbacks_.find(impl::CKey{
-	  .target_=event.event_,
-	  .callback_type_=impl::CallbackType::kAfterEvent
-  })) != callbacks_.end()) {
+	  event.event_,
+	  impl::CallbackType::kAfterEvent})) != callbacks_.end()) {
 	iter->second(event);
   }
   if ((iter = callbacks_.find(impl::CKey{
-	  .target_="",
-	  .callback_type_=impl::CallbackType::kAfterEvent
+	  "",
+	  impl::CallbackType::kAfterEvent
   })) != callbacks_.end()) {
 	iter->second(event);
   }
@@ -213,14 +200,14 @@ void FSM::AfterEventCallbacks(Event &event) noexcept(false) {
 void FSM::EnterStateCallbacks(Event &event) noexcept(false) {
   auto iter = callbacks_.end();
   if ((iter = callbacks_.find(impl::CKey{
-	  .target_=current_,
-	  .callback_type_=impl::CallbackType::kEnterState
+	  current_,
+	  impl::CallbackType::kEnterState
   })) != callbacks_.end()) {
 	iter->second(event);
   }
   if ((iter = callbacks_.find(impl::CKey{
-	  .target_="",
-	  .callback_type_=impl::CallbackType::kEnterState
+	  "",
+	  impl::CallbackType::kEnterState
   })) != callbacks_.end()) {
 	iter->second(event);
   }
@@ -229,8 +216,8 @@ void FSM::EnterStateCallbacks(Event &event) noexcept(false) {
 std::optional<std::shared_ptr<Error> > FSM::LeaveStateCallbacks(Event &event) noexcept(false) {
   auto iter = callbacks_.end();
   if ((iter = callbacks_.find(impl::CKey{
-	  .target_=current_,
-	  .callback_type_=impl::CallbackType::kLeaveState
+	  current_,
+	  impl::CallbackType::kLeaveState
   })) != callbacks_.end()) {
 	iter->second(event);
 	if (event.canceled_)
@@ -239,8 +226,8 @@ std::optional<std::shared_ptr<Error> > FSM::LeaveStateCallbacks(Event &event) no
 	  return std::make_shared<AsyncError>(event.error_ ? event.error_.value() : nullptr);
   }
   if ((iter = callbacks_.find(impl::CKey{
-	  .target_="",
-	  .callback_type_=impl::CallbackType::kLeaveState
+	  "",
+	  impl::CallbackType::kLeaveState
   })) != callbacks_.end()) {
 	iter->second(event);
 	if (event.canceled_)
@@ -254,16 +241,16 @@ std::optional<std::shared_ptr<Error> > FSM::LeaveStateCallbacks(Event &event) no
 std::optional<std::shared_ptr<Error> > FSM::BeforeEventCallbacks(Event &event) noexcept(false) {
   auto iter = callbacks_.end();
   if ((iter = callbacks_.find(impl::CKey{
-	  .target_=event.event_,
-	  .callback_type_=impl::CallbackType::kBeforeEvent
+	  event.event_,
+	  impl::CallbackType::kBeforeEvent
   })) != callbacks_.end()) {
 	iter->second(event);
 	if (event.canceled_)
 	  return std::make_shared<CanceledError>(event.error_ ? event.error_.value() : nullptr);
   }
   if ((iter = callbacks_.find(impl::CKey{
-	  .target_="",
-	  .callback_type_=impl::CallbackType::kBeforeEvent
+	  "",
+	  impl::CallbackType::kBeforeEvent
   })) != callbacks_.end()) {
 	iter->second(event);
 	if (event.canceled_)

@@ -1,11 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.15)
 PROJECT(fsm)
 
-IF (MSVC)
-	SET(CMAKE_CXX_STANDARD 20)
-ELSE ()
-	SET(CMAKE_CXX_STANDARD 17)
-ENDIF ()
+SET(CMAKE_CXX_STANDARD 17)
 
 IF (EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 	INCLUDE(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
@@ -35,7 +31,11 @@ IF (BUILD_TESTS)
 	ENABLE_TESTING()
 
 	ADD_EXECUTABLE(fsm_test tests/fsm_tests.cc)
-	TARGET_LINK_LIBRARIES(fsm_test fsm gtest_maind gtestd)
+	IF (MSVC)
+		TARGET_LINK_LIBRARIES(fsm_test fsm gtest_main gtest)
+	ELSE ()
+		TARGET_LINK_LIBRARIES(fsm_test fsm gtest_maind gtestd)
+	ENDIF ()
 
 	ADD_TEST(NAME FSM_TEST COMMAND fsm_test)
 ENDIF ()
