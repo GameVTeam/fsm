@@ -4,7 +4,7 @@
 
 #include <sstream>
 #include <map>
-
+#include <algorithm>
 #include "fsm/fsm.h"
 
 namespace fsm {

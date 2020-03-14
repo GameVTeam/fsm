@@ -7,6 +7,7 @@
 
 #include <string>
 #include <utility>
+#include <memory>
 
 namespace fsm {
 class Error {
