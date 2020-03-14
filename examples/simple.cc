@@ -11,14 +11,14 @@ int main() noexcept(false) {
 	  "closed",
 	  {
 		  fsm::EventDesc{
-			  .name_="open",
-			  .src_={"closed"},
-			  .dst_="open",
+			  "open",
+			  {"closed"},
+			  "open",
 		  },
 		  fsm::EventDesc{
-			  .name_="close",
-			  .src_={"open"},
-			  .dst_="closed",
+			  "close",
+			  {"open"},
+			  "closed",
 		  }
 	  }, {});
 
