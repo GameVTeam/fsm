@@ -535,12 +535,12 @@ namespace std {
 # elif defined TR2_OPTIONAL_CLANG_3_4_2_AND_HIGHER_
 // leave it: it is already there
 # elif defined TR2_OPTIONAL_MSVC_2015_AND_HIGHER___
-	// leave it: it is already there
+// leave it: it is already there
 # elif defined TR2_OPTIONAL_DISABLE_EMULATION_OF_TYPE_TRAITS
-	// leave it: the user doesn't want it
+// leave it: the user doesn't want it
 # else
-	template <typename T>
-	using is_trivially_destructible = std::has_trivial_destructor<T>;
+template <typename T>
+using is_trivially_destructible = std::has_trivial_destructor<T>;
 # endif
 // END workaround for missing is_trivially_destructible
 
@@ -549,9 +549,9 @@ namespace std {
 # elif defined TR2_OPTIONAL_CLANG_3_4_2_AND_HIGHER_
 // leave it; our metafunctions are already defined.
 # elif defined TR2_OPTIONAL_MSVC_2015_AND_HIGHER___
-	// leave it: it is already there
+// leave it: it is already there
 # elif defined TR2_OPTIONAL_DISABLE_EMULATION_OF_TYPE_TRAITS
-	// leave it: the user doesn't want it
+// leave it: the user doesn't want it
 # else
 
 
@@ -559,38 +559,38 @@ namespace std {
 template <class T>
 struct is_nothrow_move_constructible
 {
-  constexpr static bool value = std::is_nothrow_constructible<T, T&&>::value;
+constexpr static bool value = std::is_nothrow_constructible<T, T&&>::value;
 };
 
 
 template <class T, class U>
 struct is_assignable
 {
-  template <class X, class Y>
-  constexpr static bool has_assign(...) { return false; }
+template <class X, class Y>
+constexpr static bool has_assign(...) { return false; }
 
-  template <class X, class Y, size_t S = sizeof((std::declval<X>() = std::declval<Y>(), true)) >
-  // the comma operator is necessary for the cases where operator= returns void
-  constexpr static bool has_assign(bool) { return true; }
+template <class X, class Y, size_t S = sizeof((std::declval<X>() = std::declval<Y>(), true)) >
+// the comma operator is necessary for the cases where operator= returns void
+constexpr static bool has_assign(bool) { return true; }
 
-  constexpr static bool value = has_assign<T, U>(true);
+constexpr static bool value = has_assign<T, U>(true);
 };
 
 
 template <class T>
 struct is_nothrow_move_assignable
 {
-  template <class X, bool has_any_move_assign>
-  struct has_nothrow_move_assign {
-	constexpr static bool value = false;
-  };
+template <class X, bool has_any_move_assign>
+struct has_nothrow_move_assign {
+constexpr static bool value = false;
+};
 
-  template <class X>
-  struct has_nothrow_move_assign<X, true> {
-	constexpr static bool value = noexcept( std::declval<X&>() = std::declval<X&&>() );
-  };
+template <class X>
+struct has_nothrow_move_assign<X, true> {
+constexpr static bool value = noexcept( std::declval<X&>() = std::declval<X&&>() );
+};
 
-  constexpr static bool value = has_nothrow_move_assign<T, is_assignable<T&, T&&>::value>::value;
+constexpr static bool value = has_nothrow_move_assign<T, is_assignable<T&, T&&>::value>::value;
 };
 // end workaround
 
@@ -1704,7 +1704,7 @@ class LockGuard {
   std::mutex &mu_;
 
  public:
-  explicit LockGuard(std::mutex &mu) : mu_(mu) {}
+  explicit LockGuard(std::mutex &mu) : mu_(mu) { mu_.lock(); }
 
   ~LockGuard() { mu_.unlock(); }
 };
