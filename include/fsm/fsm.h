@@ -1624,10 +1624,10 @@ namespace fsm {
 class RWLock {
  public:
   RWLock() : status_(0), waiting_readers_(0), waiting_writers_(0) {}
-//  RWLock(const RWLock &) = delete;
-//  RWLock(RWLock &&) = delete;
-//  RWLock &operator=(const RWLock &) = delete;
-//  RWLock &operator=(RWLock &&) = delete;
+  RWLock(const RWLock &) = delete;
+  RWLock(RWLock &&) = delete;
+  RWLock &operator=(const RWLock &) = delete;
+  RWLock &operator=(RWLock &&) = delete;
 
   void RLock() {
 	std::unique_lock<std::mutex> lck(mtx_);
