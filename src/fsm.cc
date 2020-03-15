@@ -79,6 +79,12 @@ FSM::FSM(std::string initial,
   }
 }
 
+FSM::FSM(FSM const &fsm) :
+	state_mu_(), event_mu_(),
+	current_(fsm.current_),
+	transitions_(fsm.transitions_),
+	callbacks_(fsm.callbacks_) {}
+
 std::optional<std::shared_ptr<Error>> FSM::FireEvent(const std::string &event,
 													 std::vector<std::any> args) noexcept(false) {
   LockGuard event_mu_guard(event_mu_);

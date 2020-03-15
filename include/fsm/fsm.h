@@ -182,6 +182,8 @@ class FSM {
   // currently performed.
   FSM(std::string initial, const Events &events, const Callbacks &callbacks = {}) noexcept(false);
 
+  FSM(const FSM &fsm);
+
   // Current returns the current state of FSM.
   std::string Current() noexcept(false);
 
