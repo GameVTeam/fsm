@@ -12,10 +12,10 @@ namespace fsm {
 class RWLock {
  public:
   RWLock() : status_(0), waiting_readers_(0), waiting_writers_(0) {}
-//  RWLock(const RWLock &) = delete;
-//  RWLock(RWLock &&) = delete;
-//  RWLock &operator=(const RWLock &) = delete;
-//  RWLock &operator=(RWLock &&) = delete;
+  RWLock(const RWLock &) = delete;
+  RWLock(RWLock &&) = delete;
+  RWLock &operator=(const RWLock &) = delete;
+  RWLock &operator=(RWLock &&) = delete;
 
   void RLock() {
 	std::unique_lock<std::mutex> lck(mtx_);
@@ -92,7 +92,9 @@ class LockGuard {
   std::mutex &mu_;
 
  public:
-  explicit LockGuard(std::mutex &mu) : mu_(mu) {}
+  explicit LockGuard(std::mutex &mu) : mu_(mu) {
+	mu_.lock();
+  }
 
   ~LockGuard() { mu_.unlock(); }
 };
