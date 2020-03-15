@@ -30,11 +30,11 @@ int main() noexcept(false) {
 
   auto err = door.machine_.FireEvent("open");
   if (err)
-	std::cout << err.value()->What();
+	std::cout << err->What();
 
   err = door.machine_.FireEvent("close");
   if (err)
-	std::cout << err.value()->What();
+	std::cout << err->What();
 
   return EXIT_SUCCESS;
 }

@@ -57,7 +57,7 @@ int main() noexcept(false) {
   auto err = machine.FireEvent("scan");
 
   if (err) {
-	std::cout << err.value()->What() << std::endl;
+	std::cout << err->What() << std::endl;
   }
 
   std::cout << "1: " << machine.Current() << std::endl;
@@ -65,7 +65,7 @@ int main() noexcept(false) {
   err = machine.FireEvent("working");
 
   if (err) {
-	std::cout << err.value()->What() << std::endl;
+	std::cout << err->What() << std::endl;
   }
 
   std::cout << "2: " << machine.Current() << std::endl;
@@ -73,7 +73,7 @@ int main() noexcept(false) {
   err = machine.FireEvent("situation");
 
   if (err) {
-	std::cout << err.value()->What() << std::endl;
+	std::cout << err->What() << std::endl;
   }
 
   std::cout << "3: " << machine.Current() << std::endl;
@@ -81,7 +81,7 @@ int main() noexcept(false) {
   err = machine.FireEvent("finish");
 
   if (err) {
-	std::cout << err.value()->What() << std::endl;
+	std::cout << err->What() << std::endl;
   }
 
   std::cout << "4: " << machine.Current() << std::endl;

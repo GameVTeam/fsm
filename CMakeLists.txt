@@ -12,15 +12,15 @@ ENDIF ()
 
 INCLUDE_DIRECTORIES(include)
 
-ADD_LIBRARY(fsm include/fsm/fsm.h include/fsm/events.h include/fsm/errors.h
-			src/fsm.cc src/events.cc include/fsm/utils.h src/utils.cc include/fsm/locks.h include/fsm/any.h)
+ADD_LIBRARY(fsm include/fsm/fsm.h include/fsm/events.h include/fsm/errors.h include/fsm/any.h include/fsm/locks.h
+			src/fsm.cc src/events.cc include/fsm/utils.h src/utils.cc src/locks.cc)
 
 FIND_PACKAGE(Threads REQUIRED)
 SET(FSM_LIB ${CMAKE_THREAD_LIBS_INIT} fsm ${CMAKE_THREAD_LIBS_INIT})
 
 IF (BUILD_EXAMPLES)
 	ADD_EXECUTABLE(simple examples/simple.cc)
-	ADD_EXECUTABLE(alternative examples/alternative.cc include/fsm/optional.h)
+	ADD_EXECUTABLE(alternative examples/alternative.cc)
 	ADD_EXECUTABLE(struct examples/struct.cc)
 	ADD_EXECUTABLE(graph examples/graph.cc)
 	ADD_EXECUTABLE(async examples/async.cc)

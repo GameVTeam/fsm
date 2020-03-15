@@ -98,10 +98,10 @@ VisualizeResult Visualize(FSM &machine, VisualizeType visualize_type) noexcept(f
   switch (visualize_type) {
 	case VisualizeType::kGraphviz:
 	  return std::make_pair(GraphvizVisualizer().Visualize(machine),
-							std::optional<std::shared_ptr<Error>>{});
+							nullptr);
 	case VisualizeType::kMermaid:
 	  return std::make_pair(MermaidVisualizer().Visualize(machine),
-							std::optional<std::shared_ptr<Error>>{});
+							nullptr);
 	default: return VisualizeResult{"", {std::make_shared<UnknownVisualizeTypeError>()}};
   }
 }

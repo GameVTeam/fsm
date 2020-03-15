@@ -14,11 +14,11 @@ int main() noexcept(false) {
 
   auto err = machine.FireEvent("run");
 
-  if (err)std::cout << err.value()->What() << std::endl;
+  if (err)std::cout << err->What() << std::endl;
 
   err = machine.Transition();
 
-  if (err)std::cout << err.value()->What() << std::endl;
+  if (err)std::cout << err)->What() << std::endl;
 
   return EXIT_SUCCESS;
 }

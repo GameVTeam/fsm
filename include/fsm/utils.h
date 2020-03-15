@@ -9,8 +9,6 @@
 #include <tuple>
 #include <memory>
 
-#include "optional.h"
-
 namespace fsm {
 class FSM;
 class Error;
@@ -21,7 +19,7 @@ enum class VisualizeType : int {
   kMermaid,
 };
 
-using VisualizeResult=std::pair<std::string, std::optional<std::shared_ptr<Error>>>;
+using VisualizeResult=std::pair<std::string, std::shared_ptr<Error>>;
 
 // Visualize outputs a visualization of a FSM in desired format.
 // If the type is not given it defaults to Graphviz.
