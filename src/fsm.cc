@@ -30,7 +30,11 @@ FSM::FSM(std::string initial,
 	std::string target{};
 	impl::CallbackType callback_type{};
 
+#if __cplusplus >= 201703L
+	auto helper = [&](std::string_view prefix) -> bool {
+#else
 	auto helper = [&](const std::string &prefix) -> bool {
+#endif
 	  if (name.rfind(prefix) == 0) {
 		target = name.substr(prefix.size());
 		return true;
