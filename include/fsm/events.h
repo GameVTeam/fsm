@@ -5,13 +5,13 @@
 #ifndef FSM__EVENT_H_
 #define FSM__EVENT_H_
 
-#include "errors.h"
-
-#include <optional>
 #include <utility>
 #include <vector>
-#include <any>
 #include <functional>
+
+#include "optional.h"
+#include "errors.h"
+#include "any.h"
 
 namespace fsm {
 class FSM;

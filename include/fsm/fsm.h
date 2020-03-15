@@ -12,9 +12,8 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <mutex>
-#include <shared_mutex>
 
+#include "locks.h"
 #include "errors.h"
 #include "events.h"
 #include "utils.h"
@@ -142,41 +141,7 @@ class FSM {
   std::mutex event_mu_{};
 
   // state_mu_ guards access to the current state.
-  std::shared_mutex state_mu_{};
-
-  class RLockGuard {
-	std::shared_mutex &mu_;
-   public:
-	explicit RLockGuard(std::shared_mutex &mu) : mu_(mu) {
-	  mu_.lock_shared();
-	}
-	~RLockGuard() {
-	  mu_.unlock_shared();
-	}
-  };
-
-  class WLockGuard {
-	std::shared_mutex &mu_;
-   public:
-	explicit WLockGuard(std::shared_mutex &mu) : mu_(mu) {
-	  mu_.lock();
-	}
-	~WLockGuard() {
-	  mu_.unlock();
-	}
-
-  };
-
-  class LockGuard {
-	std::mutex &mu_;
-   public:
-	explicit LockGuard(std::mutex &mu) : mu_(mu) {
-	  mu_.lock();
-	}
-	~LockGuard() {
-	  mu_.unlock();
-	}
-  };
+  RWLock state_mu_{};
 
  public:
   // Construct a FSM from events and callbacks.

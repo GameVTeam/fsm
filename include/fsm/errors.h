@@ -26,6 +26,8 @@ class Error {
 	Hasher hasher{};
 	return hasher(*this) == hasher(other);
   }
+  
+  virtual ~Error() = default;
 };
 
 // InTransitionError is returned by FSM.Event() when an asynchronous transition

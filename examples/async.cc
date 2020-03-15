@@ -7,7 +7,7 @@
 #include <fsm/fsm.h>
 
 int main() noexcept(false) {
-  auto machine = fsm::FSM(
+  fsm::FSM machine(
 	  "start",
 	  {{"run", {"start"}, "end"}},
 	  {{"leave_start", [&](fsm::Event &event) { event.Async(); }}});

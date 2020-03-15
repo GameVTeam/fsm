@@ -7,8 +7,9 @@
 
 #include <string>
 #include <tuple>
-#include <optional>
 #include <memory>
+
+#include "optional.h"
 
 namespace fsm {
 class FSM;

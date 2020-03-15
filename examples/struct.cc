@@ -26,7 +26,7 @@ class Door {
 };
 
 int main() noexcept(false) {
-  auto door = Door("老 八 撤 🔒");
+  Door door("老 八 撤 🔒");
 
   auto err = door.machine_.FireEvent("open");
   if (err)
