@@ -6,23 +6,19 @@ fsm is a zero-dependency C++11 finite state machine library.
 
 From examples/simple.cc:
 ```c++
-#include <iostream>
-
-#include <fsm/fsm.h>
-
 int main() noexcept(false) {
   auto machine = fsm::FSM(
 	  "closed",
 	  {
 		  fsm::EventDesc{
-			  .name_="open",
-			  .src_={"closed"},
-			  .dst_="open",
+			  "open",
+			  {"closed"},
+			  "open",
 		  },
 		  fsm::EventDesc{
-			  .name_="close",
-			  .src_={"open"},
-			  .dst_="closed",
+			  "close",
+			  {"open"},
+			  "closed",
 		  }
 	  }, {});
 
