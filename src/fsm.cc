@@ -85,8 +85,8 @@ FSM::FSM(FSM const &fsm) :
 	transitions_(fsm.transitions_),
 	callbacks_(fsm.callbacks_) {}
 
-std::optional<std::shared_ptr<Error>> FSM::FireEvent(const std::string &event,
-													 std::vector<std::any> args) noexcept(false) {
+std::shared_ptr<Error> FSM::FireEvent(const std::string &event,
+									  std::vector<std::any> args) noexcept(false) {
   LockGuard event_mu_guard(event_mu_);
   RLockGuard state_mu_guard(state_mu_);
 
@@ -118,7 +118,7 @@ std::optional<std::shared_ptr<Error>> FSM::FireEvent(const std::string &event,
   if (current_ == dst) {
 	AfterEventCallbacks(*event_obj);
 	//return {};
-	return {std::make_shared<NoTransitionError>(event_obj->error_ ? event_obj->error_.value() : nullptr)};
+	return {std::make_shared<NoTransitionError>(event_obj->error_)};
   }
 
   // Setup the transition, call it later.
@@ -134,7 +134,7 @@ std::optional<std::shared_ptr<Error>> FSM::FireEvent(const std::string &event,
   err = LeaveStateCallbacks(*event_obj);
 
   if (err) {
-	if (std::dynamic_pointer_cast<CanceledError>(err.value()) != nullptr)
+	if (std::dynamic_pointer_cast<CanceledError>(err) != nullptr)
 	  transition_ = nullptr;
 	return err;
   }
@@ -183,12 +183,12 @@ std::vector<std::string> FSM::AvailableTransitions() noexcept(false) {
   return res;
 }
 
-std::optional<std::shared_ptr<Error>> FSM::Transition() noexcept(false) {
+std::shared_ptr<Error> FSM::Transition() noexcept(false) {
   LockGuard guard(event_mu_);
   return DoTransition();
 }
 
-std::optional<std::shared_ptr<Error>> FSM::DoTransition() noexcept(false) {
+std::shared_ptr<Error> FSM::DoTransition() noexcept(false) {
   return transition_obj_->Transition(*this);
 }
 
@@ -223,7 +223,7 @@ void FSM::EnterStateCallbacks(Event &event) noexcept(false) {
   }
 }
 
-std::optional<std::shared_ptr<Error> > FSM::LeaveStateCallbacks(Event &event) noexcept(false) {
+std::shared_ptr<Error> FSM::LeaveStateCallbacks(Event &event) noexcept(false) {
   auto iter = callbacks_.end();
   if ((iter = callbacks_.find(impl::CKey{
 	  current_,
@@ -231,9 +231,9 @@ std::optional<std::shared_ptr<Error> > FSM::LeaveStateCallbacks(Event &event) no
   })) != callbacks_.end()) {
 	iter->second(event);
 	if (event.canceled_)
-	  return {std::make_shared<CanceledError>(event.error_ ? event.error_.value() : nullptr)};
+	  return {std::make_shared<CanceledError>(event.error_)};
 	else if (event.async_)
-	  return {std::make_shared<AsyncError>(event.error_ ? event.error_.value() : nullptr)};
+	  return {std::make_shared<AsyncError>(event.error_)};
   }
   if ((iter = callbacks_.find(impl::CKey{
 	  "",
@@ -241,14 +241,14 @@ std::optional<std::shared_ptr<Error> > FSM::LeaveStateCallbacks(Event &event) no
   })) != callbacks_.end()) {
 	iter->second(event);
 	if (event.canceled_)
-	  return {std::make_shared<CanceledError>(event.error_ ? event.error_.value() : nullptr)};
+	  return {std::make_shared<CanceledError>(event.error_)};
 	else if (event.async_)
-	  return {std::make_shared<AsyncError>(event.error_ ? event.error_.value() : nullptr)};
+	  return {std::make_shared<AsyncError>(event.error_)};
   }
   return {};
 }
 
-std::optional<std::shared_ptr<Error> > FSM::BeforeEventCallbacks(Event &event) noexcept(false) {
+std::shared_ptr<Error> FSM::BeforeEventCallbacks(Event &event) noexcept(false) {
   auto iter = callbacks_.end();
   if ((iter = callbacks_.find(impl::CKey{
 	  event.event_,
@@ -256,7 +256,7 @@ std::optional<std::shared_ptr<Error> > FSM::BeforeEventCallbacks(Event &event) n
   })) != callbacks_.end()) {
 	iter->second(event);
 	if (event.canceled_)
-	  return {std::make_shared<CanceledError>(event.error_ ? event.error_.value() : nullptr)};
+	  return {std::make_shared<CanceledError>(event.error_)};
   }
   if ((iter = callbacks_.find(impl::CKey{
 	  "",
@@ -264,7 +264,7 @@ std::optional<std::shared_ptr<Error> > FSM::BeforeEventCallbacks(Event &event) n
   })) != callbacks_.end()) {
 	iter->second(event);
 	if (event.canceled_)
-	  return {std::make_shared<CanceledError>(event.error_ ? event.error_.value() : nullptr)};
+	  return {std::make_shared<CanceledError>(event.error_)};
   }
   return {};
 }
@@ -274,7 +274,7 @@ VisualizeResult FSM::Visualize(VisualizeType visualize_type) noexcept(false) {
 }
 
 namespace impl {
-std::optional<std::shared_ptr<Error> > TransitionerClass::Transition(FSM &machine) noexcept(false) {
+std::shared_ptr<Error> TransitionerClass::Transition(FSM &machine) noexcept(false) {
   if (!machine.transition_) {
 	return {std::make_shared<NotInTransitionError>()};
   }

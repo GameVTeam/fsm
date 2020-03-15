@@ -11,43 +11,17 @@
 namespace fsm {
 class RWLock {
  public:
-  RWLock() : status_(0), waiting_readers_(0), waiting_writers_(0) {}
+  RWLock();
   RWLock(const RWLock &) = delete;
   RWLock(RWLock &&) = delete;
   RWLock &operator=(const RWLock &) = delete;
   RWLock &operator=(RWLock &&) = delete;
 
-  void RLock() {
-	std::unique_lock<std::mutex> lck(mtx_);
-	waiting_readers_ += 1;
-	read_cv_.wait(lck, [&]() { return waiting_writers_ == 0 && status_ >= 0; });
-	waiting_readers_ -= 1;
-	status_ += 1;
-  }
+  void RLock();
 
-  void Lock() {
-	std::unique_lock<std::mutex> lck(mtx_);
-	waiting_writers_ += 1;
-	write_cv_.wait(lck, [&]() { return status_ == 0; });
-	waiting_writers_ -= 1;
-	status_ = -1;
-  }
+  void Lock();
 
-  void Unlock() {
-	std::unique_lock<std::mutex> lck(mtx_);
-	if (status_ == -1) {
-	  status_ = 0;
-	} else {
-	  status_ -= 1;
-	}
-	if (waiting_writers_ > 0) {
-	  if (status_ == 0) {
-		write_cv_.notify_one();
-	  }
-	} else {
-	  read_cv_.notify_all();
-	}
-  }
+  void Unlock();
 
  private:
   // -1    : one writer
@@ -66,12 +40,8 @@ class RLockGuard {
   RWLock &lock_;
 
  public:
-  explicit RLockGuard(RWLock &lock) : lock_(lock) {
-	lock_.RLock();
-  }
-  ~RLockGuard() {
-	lock_.Unlock();
-  }
+  explicit RLockGuard(RWLock &lock);
+  ~RLockGuard();
 };
 
 class WLockGuard {
@@ -79,12 +49,8 @@ class WLockGuard {
   RWLock &lock_;
 
  public:
-  explicit WLockGuard(RWLock &lock) : lock_(lock) {
-	lock_.Lock();
-  }
-  ~WLockGuard() {
-	lock_.Unlock();
-  }
+  explicit WLockGuard(RWLock &lock);
+  ~WLockGuard();
 };
 
 class LockGuard {
@@ -92,11 +58,9 @@ class LockGuard {
   std::mutex &mu_;
 
  public:
-  explicit LockGuard(std::mutex &mu) : mu_(mu) {
-	mu_.lock();
-  }
+  explicit LockGuard(std::mutex &mu);
 
-  ~LockGuard() { mu_.unlock(); }
+  ~LockGuard();
 };
 }
 #endif //RWLOCK__RWLOCK_H_

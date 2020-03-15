@@ -41,7 +41,7 @@ TEST_F(FSMTestGroup, TestInappropriateEvent) {
 	  {"close", {"open"}, "closed"},
   }, {});
   auto err = machine.FireEvent("close");
-  if (!err || !std::dynamic_pointer_cast<fsm::InvalidEventError>(err.value()))
+  if (!err || !std::dynamic_pointer_cast<fsm::InvalidEventError>(err))
 	FAIL() << "expected 'InvalidEventError' with correct state and event";
 }
 
@@ -51,7 +51,7 @@ TEST_F(FSMTestGroup, TestInvalidEvent) {
 	  {"close", {"open"}, "closed"},
   }, {});
   auto err = machine.FireEvent("lock");
-  if (!err || !std::dynamic_pointer_cast<fsm::UnknownEventError>(err.value()))
+  if (!err || !std::dynamic_pointer_cast<fsm::UnknownEventError>(err))
 	FAIL() << "expected 'UnknownEventError' with correct event";
 }
 
@@ -169,7 +169,7 @@ TEST_F(FSMTestGroup, TestBeforeEventWithoutTransition) {
   );
 
   auto err = machine.FireEvent("do_not_run");
-  if (!err || !std::dynamic_pointer_cast<fsm::NoTransitionError>(err.value()))
+  if (!err || !std::dynamic_pointer_cast<fsm::NoTransitionError>(err))
 	FAIL() << "expected 'NoTransitionError' without custom error";
 
   if (machine.Current() != "start")
@@ -238,10 +238,10 @@ TEST_F(FSMTestGroup, TestCancelWithError) {
 
   auto err = machine.FireEvent("run");
 
-  if (!err || !std::dynamic_pointer_cast<fsm::CanceledError>(err.value()))
+  if (!err || !std::dynamic_pointer_cast<fsm::CanceledError>(err))
 	FAIL() << "expected only 'CanceledError'";
 
-  if (!std::dynamic_pointer_cast<FakeError>(std::dynamic_pointer_cast<fsm::CanceledError>(err.value())->error_))
+  if (!std::dynamic_pointer_cast<FakeError>(std::dynamic_pointer_cast<fsm::CanceledError>(err)->error_))
 	FAIL() << "expected 'CanceledError' with correct custom error";
 
   if (machine.Current() != "start")
@@ -294,8 +294,8 @@ TEST_F(FSMTestGroup, TestAsyncTransitionInProgress) {
   auto err = machine.FireEvent("reset");
 
   if (!err ||
-	  !std::dynamic_pointer_cast<fsm::InTransitionError>(err.value()) ||
-	  std::dynamic_pointer_cast<fsm::InTransitionError>(err.value())->event_ != "reset")
+	  !std::dynamic_pointer_cast<fsm::InTransitionError>(err) ||
+	  std::dynamic_pointer_cast<fsm::InTransitionError>(err)->event_ != "reset")
 	FAIL() << "expected state to be start";
 
   machine.Transition();
@@ -314,7 +314,7 @@ TEST_F(FSMTestGroup, TestAsyncTransitionNotInprogress) {
 	  {});
 
   auto err = machine.Transition();
-  if (!err || !std::dynamic_pointer_cast<fsm::NotInTransitionError>(err.value()))
+  if (!err || !std::dynamic_pointer_cast<fsm::NotInTransitionError>(err))
 	FAIL() << "expected 'NotInTransitionError'";
 }
 
@@ -337,7 +337,7 @@ TEST_F(FSMTestGroup, TestCallbackError) {
 
   auto err = machine.FireEvent("run");
 
-  if (!err || !std::dynamic_pointer_cast<FakeError>(err.value()))
+  if (!err || !std::dynamic_pointer_cast<FakeError>(err))
 	FAIL() << "expected error to be 'FakeError'";
 }
 
@@ -440,7 +440,7 @@ TEST_F(FSMTestGroup, TestNoTransition) {
 				   {{"run", {"start"}, "start"}});
 
   auto err = machine.FireEvent("run");
-  if (!err || !std::dynamic_pointer_cast<fsm::NoTransitionError>(err.value()))
+  if (!err || !std::dynamic_pointer_cast<fsm::NoTransitionError>(err))
 	FAIL() << "expected 'NoTransitionError'";
 }
 

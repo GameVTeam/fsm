@@ -27,7 +27,7 @@ int main() noexcept(false) {
   auto err = machine.FireEvent("open");
 
   if (err) {
-	std::cout << err.value()->What() << std::endl;
+	std::cout << err->What() << std::endl;
 	return EXIT_FAILURE;
   }
 
@@ -36,7 +36,7 @@ int main() noexcept(false) {
   err = machine.FireEvent("close");
 
   if (err) {
-	std::cout << err.value()->What() << std::endl;
+	std::cout << err->What() << std::endl;
 	return EXIT_FAILURE;
   }
 

@@ -18,8 +18,6 @@
 #include "events.h"
 #include "utils.h"
 
-class FSMTestGroup;
-
 namespace fsm {
 class FSM;
 
@@ -28,7 +26,7 @@ namespace impl {
 // Transitioner is a pure virtual class for the FSM's transition function.
 class Transitioner {
  public:
-  virtual std::optional<std::shared_ptr<Error>> Transition(FSM &) noexcept(false) = 0;
+  virtual std::shared_ptr<Error> Transition(FSM &) noexcept(false) = 0;
 };
 
 // TransitionerClass is the default implementation of the transitioner
@@ -38,7 +36,7 @@ class TransitionerClass : public Transitioner {
   //
   // The callback for leave_<STATE> must previously have called Async on its
   // event to have initiated an asynchronous state transition.
-  std::optional<std::shared_ptr<Error> > Transition(FSM &) noexcept(false) override;
+  std::shared_ptr<Error> Transition(FSM &) noexcept(false) override;
 };
 
 enum class CallbackType : int {
@@ -206,7 +204,7 @@ class FSM {
   std::vector<std::string> AvailableTransitions() noexcept(false);
 
   // Transition wraps impl::Transitioner::Transition.
-  std::optional<std::shared_ptr<Error>> Transition() noexcept(false);
+  std::shared_ptr<Error> Transition() noexcept(false);
 
   // FireEvent initiates a state transition with the named event.
   //
@@ -225,7 +223,7 @@ class FSM {
   //
   // The last error should never occur in this situation and is a sign of an
   // internal bug.
-  std::optional<std::shared_ptr<Error>> FireEvent(const std::string &event,
+  std::shared_ptr<Error> FireEvent(const std::string &event,
 												  std::vector<std::any> args = {}) noexcept(false);
 
   // Visualize outputs a visualization of this FSM in the desired format.
@@ -233,7 +231,7 @@ class FSM {
   VisualizeResult Visualize(VisualizeType visualize_type = VisualizeType::kGraphviz) noexcept(false);
  private:
   // DoTransition wraps impl::Transitioner::Transition.
-  std::optional<std::shared_ptr<Error>> DoTransition() noexcept(false);
+  std::shared_ptr<Error> DoTransition() noexcept(false);
 
   // AfterEventCallbacks calls the after_ callbacks, first the named then the
   // general version.
@@ -245,11 +243,11 @@ class FSM {
 
   // LeaveStateCallbacks calls the leave_ callbacks, first the named then the
   // general version.
-  std::optional<std::shared_ptr<Error> > LeaveStateCallbacks(Event &event) noexcept(false);
+  std::shared_ptr<Error> LeaveStateCallbacks(Event &event) noexcept(false);
 
   // BeforeEventCallbacks calls the before_ callbacks, first the named then the
   // general version.
-  std::optional<std::shared_ptr<Error> > BeforeEventCallbacks(Event &event) noexcept(false);
+  std::shared_ptr<Error> BeforeEventCallbacks(Event &event) noexcept(false);
 };
 }
 #endif //FSM__FSM_H_

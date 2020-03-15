@@ -9,7 +9,6 @@
 #include <vector>
 #include <functional>
 
-#include "optional.h"
 #include "errors.h"
 #include "any.h"
 
@@ -34,7 +33,7 @@ class Event {
   std::string dst_{};
 
   // error_ is an optional error that can be returned from callback.
-  std::optional<std::shared_ptr<Error>> error_{};
+  std::shared_ptr<Error> error_{};
 
   // args_ is optional list of arguments passed to the callback.
   std::vector<std::any> args_{};
