@@ -1938,6 +1938,8 @@ class FSM {
   // Visualize outputs a visualization of this FSM in the desired format.
   // Note that this facility is not thread safety.
   VisualizeResult Visualize(VisualizeType visualize_type = VisualizeType::kGraphviz) noexcept(false);
+
+  FSM(const FSM &fsm);
  private:
   // DoTransition wraps impl::Transitioner::Transition.
   std::optional<std::shared_ptr<Error>> DoTransition() noexcept(false);
@@ -2361,6 +2363,12 @@ class GraphvizVisualizer : public Visualizer {
 	return buffer.str();
   }
 };
+
+FSM::FSM(FSM const &fsm) :
+	state_mu_(), event_mu_(),
+	current_(fsm.current_),
+	transitions_(fsm.transitions_),
+	callbacks_(fsm.callbacks_) {}
 
 VisualizeResult Visualize(FSM &machine, VisualizeType visualize_type) noexcept(false) {
   switch (visualize_type) {

@@ -1,6 +1,6 @@
 # fsm
 
-fsm is a zero-dependency C++17 finite state machine library.
+fsm is a zero-dependency C++11 finite state machine library.
 
 ## Basic Example 
 
