@@ -30,7 +30,7 @@ FSM::FSM(std::string initial,
 	std::string target{};
 	impl::CallbackType callback_type{};
 
-	auto helper = [&](std::string_view prefix) -> bool {
+	auto helper = [&](const std::string &prefix) -> bool {
 	  if (name.rfind(prefix) == 0) {
 		target = name.substr(prefix.size());
 		return true;
@@ -81,15 +81,15 @@ std::optional<std::shared_ptr<Error>> FSM::FireEvent(const std::string &event,
   RLockGuard state_mu_guard(state_mu_);
 
   if (transition_)
-	return std::make_shared<InTransitionError>(event);
+	return {std::make_shared<InTransitionError>(event)};
 
   auto iter = transitions_.find(impl::EKey{event, current_});
 
   if (iter == transitions_.end()) {
 	for (const auto &ekv:transitions_)
 	  if (ekv.first.event_ == event)
-		return std::make_shared<InvalidEventError>(event, current_);
-	return std::make_shared<UnknownEventError>(event);
+		return {std::make_shared<InvalidEventError>(event, current_)};
+	return {std::make_shared<UnknownEventError>(event)};
   }
 
   auto &dst = iter->second;
@@ -108,14 +108,14 @@ std::optional<std::shared_ptr<Error>> FSM::FireEvent(const std::string &event,
   if (current_ == dst) {
 	AfterEventCallbacks(*event_obj);
 	//return {};
-	return std::make_shared<NoTransitionError>(event_obj->error_ ? event_obj->error_.value() : nullptr);
+	return {std::make_shared<NoTransitionError>(event_obj->error_ ? event_obj->error_.value() : nullptr)};
   }
 
   // Setup the transition, call it later.
   transition_ = [=]() {
-	state_mu_.lock();
+	state_mu_.Lock();
 	current_ = dst;
-	state_mu_.unlock();
+	state_mu_.Unlock();
 
 	EnterStateCallbacks(*event_obj);
 	AfterEventCallbacks(*event_obj);
@@ -130,12 +130,12 @@ std::optional<std::shared_ptr<Error>> FSM::FireEvent(const std::string &event,
   }
 
   // Perform the rest of the transition, if not asynchronous.
-  state_mu_.unlock_shared();
+  state_mu_.Unlock();
   err = DoTransition();
-  state_mu_.lock_shared();
+  state_mu_.RLock();
 
   if (err)
-	return std::make_shared<InternalError>();
+	return {std::make_shared<InternalError>()};
 
   return event_obj->error_;
 }
@@ -221,9 +221,9 @@ std::optional<std::shared_ptr<Error> > FSM::LeaveStateCallbacks(Event &event) no
   })) != callbacks_.end()) {
 	iter->second(event);
 	if (event.canceled_)
-	  return std::make_shared<CanceledError>(event.error_ ? event.error_.value() : nullptr);
+	  return {std::make_shared<CanceledError>(event.error_ ? event.error_.value() : nullptr)};
 	else if (event.async_)
-	  return std::make_shared<AsyncError>(event.error_ ? event.error_.value() : nullptr);
+	  return {std::make_shared<AsyncError>(event.error_ ? event.error_.value() : nullptr)};
   }
   if ((iter = callbacks_.find(impl::CKey{
 	  "",
@@ -231,9 +231,9 @@ std::optional<std::shared_ptr<Error> > FSM::LeaveStateCallbacks(Event &event) no
   })) != callbacks_.end()) {
 	iter->second(event);
 	if (event.canceled_)
-	  return std::make_shared<CanceledError>(event.error_ ? event.error_.value() : nullptr);
+	  return {std::make_shared<CanceledError>(event.error_ ? event.error_.value() : nullptr)};
 	else if (event.async_)
-	  return std::make_shared<AsyncError>(event.error_ ? event.error_.value() : nullptr);
+	  return {std::make_shared<AsyncError>(event.error_ ? event.error_.value() : nullptr)};
   }
   return {};
 }
@@ -246,7 +246,7 @@ std::optional<std::shared_ptr<Error> > FSM::BeforeEventCallbacks(Event &event) n
   })) != callbacks_.end()) {
 	iter->second(event);
 	if (event.canceled_)
-	  return std::make_shared<CanceledError>(event.error_ ? event.error_.value() : nullptr);
+	  return {std::make_shared<CanceledError>(event.error_ ? event.error_.value() : nullptr)};
   }
   if ((iter = callbacks_.find(impl::CKey{
 	  "",
@@ -254,7 +254,7 @@ std::optional<std::shared_ptr<Error> > FSM::BeforeEventCallbacks(Event &event) n
   })) != callbacks_.end()) {
 	iter->second(event);
 	if (event.canceled_)
-	  return std::make_shared<CanceledError>(event.error_ ? event.error_.value() : nullptr);
+	  return {std::make_shared<CanceledError>(event.error_ ? event.error_.value() : nullptr)};
   }
   return {};
 }
@@ -266,10 +266,10 @@ VisualizeResult FSM::Visualize(VisualizeType visualize_type) noexcept(false) {
 namespace impl {
 std::optional<std::shared_ptr<Error> > TransitionerClass::Transition(FSM &machine) noexcept(false) {
   if (!machine.transition_) {
-	return std::make_shared<NotInTransitionError>();
+	return {std::make_shared<NotInTransitionError>()};
   }
   machine.transition_();
-  FSM::WLockGuard guard(machine.state_mu_);
+  WLockGuard guard(machine.state_mu_);
   machine.transition_ = nullptr;
   return {};
 }

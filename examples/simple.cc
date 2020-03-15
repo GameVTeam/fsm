@@ -7,7 +7,7 @@
 #include <fsm/fsm.h>
 
 int main() noexcept(false) {
-  auto machine = fsm::FSM(
+  fsm::FSM machine(
 	  "closed",
 	  {
 		  fsm::EventDesc{

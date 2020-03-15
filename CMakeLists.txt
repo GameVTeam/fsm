@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 PROJECT(fsm)
 
-SET(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_STANDARD 11)
 
 IF (EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 	INCLUDE(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
@@ -13,14 +13,14 @@ ENDIF ()
 INCLUDE_DIRECTORIES(include)
 
 ADD_LIBRARY(fsm include/fsm/fsm.h include/fsm/events.h include/fsm/errors.h
-			src/fsm.cc src/events.cc include/fsm/utils.h src/utils.cc)
+			src/fsm.cc src/events.cc include/fsm/utils.h src/utils.cc include/fsm/locks.h include/fsm/any.h)
 
 FIND_PACKAGE(Threads REQUIRED)
 SET(FSM_LIB ${CMAKE_THREAD_LIBS_INIT} fsm ${CMAKE_THREAD_LIBS_INIT})
 
 IF (BUILD_EXAMPLES)
 	ADD_EXECUTABLE(simple examples/simple.cc)
-	ADD_EXECUTABLE(alternative examples/alternative.cc)
+	ADD_EXECUTABLE(alternative examples/alternative.cc include/fsm/optional.h)
 	ADD_EXECUTABLE(struct examples/struct.cc)
 	ADD_EXECUTABLE(graph examples/graph.cc)
 	ADD_EXECUTABLE(async examples/async.cc)

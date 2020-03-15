@@ -102,7 +102,7 @@ VisualizeResult Visualize(FSM &machine, VisualizeType visualize_type) noexcept(f
 	case VisualizeType::kMermaid:
 	  return std::make_pair(MermaidVisualizer().Visualize(machine),
 							std::optional<std::shared_ptr<Error>>{});
-	default: return std::make_pair("", std::make_shared<UnknownVisualizeTypeError>());
+	default: return VisualizeResult{"", {std::make_shared<UnknownVisualizeTypeError>()}};
   }
 }
 }
