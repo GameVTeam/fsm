@@ -18,7 +18,7 @@ int main() noexcept(false) {
 
   err = machine.Transition();
 
-  if (err)std::cout << err)->What() << std::endl;
+  if (err)std::cout << err->What() << std::endl;
 
   return EXIT_SUCCESS;
 }
