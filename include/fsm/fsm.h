@@ -224,11 +224,14 @@ class FSM {
   // The last error should never occur in this situation and is a sign of an
   // internal bug.
   std::shared_ptr<Error> FireEvent(const std::string &event,
-												  std::vector<std::any> args = {}) noexcept(false);
+								   std::vector<std::any> args = {}) noexcept(false);
 
   // Visualize outputs a visualization of this FSM in the desired format.
   // Note that this facility is not thread safety.
   VisualizeResult Visualize(VisualizeType visualize_type = VisualizeType::kGraphviz) noexcept(false);
+
+  // AddCallback allows users to set callback on runtime.
+  void SetCallback(const std::string &name, const Callback &callback = nullptr) noexcept(false);
  private:
   // DoTransition wraps impl::Transitioner::Transition.
   std::shared_ptr<Error> DoTransition() noexcept(false);

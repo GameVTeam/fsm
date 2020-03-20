@@ -21,62 +21,8 @@ FSM::FSM(std::string initial,
   }
 
   // Map all callbacks to events/states.
-  for (const auto &kv:callbacks) {
-	// const auto&[name, fn]=kv;
-	// TODO: I don't know why `name` cannot be captured by lambda using C++17 structured binding shown above.
-	const std::string &name = kv.first;
-	const Callback &fn = kv.second;
-
-	std::string target{};
-	impl::CallbackType callback_type{};
-
-#if __cplusplus >= 201703L
-	auto helper = [&](std::string_view prefix) -> bool {
-#else
-	auto helper = [&](const std::string &prefix) -> bool {
-#endif
-	  if (name.rfind(prefix) == 0) {
-		target = name.substr(prefix.size());
-		return true;
-	  }
-	  return false;
-	};
-
-	if (helper("before_")) {
-	  if (target == "event") {
-		target = "";
-		callback_type = impl::CallbackType::kBeforeEvent;
-	  } else if (all_events.find(target) != all_events.end())
-		callback_type = impl::CallbackType::kBeforeEvent;
-	} else if (helper("leave_")) {
-	  if (target == "state") {
-		target = "";
-		callback_type = impl::CallbackType::kLeaveState;
-	  } else if (all_states.find(target) != all_states.end())
-		callback_type = impl::CallbackType::kLeaveState;
-	} else if (helper("enter_")) {
-	  if (target == "state") {
-		target = "";
-		callback_type = impl::CallbackType::kEnterState;
-	  } else if (all_states.find(target) != all_states.end())
-		callback_type = impl::CallbackType::kEnterState;
-	} else if (helper("after_")) {
-	  if (target == "event") {
-		target = "";
-		callback_type = impl::CallbackType::kAfterEvent;
-	  } else if (all_events.find(target) != all_events.end())
-		callback_type = impl::CallbackType::kAfterEvent;
-	} else {
-	  target = name;
-	  if (all_states.find(target) != all_states.end())
-		callback_type = impl::CallbackType::kEnterState;
-	  else if (all_events.find(target) != all_events.end())
-		callback_type = impl::CallbackType::kAfterEvent;
-	}
-
-	if (callback_type != impl::CallbackType::kNone)
-	  callbacks_[impl::CKey{target, callback_type}] = fn;
-  }
+  for (const auto &kv:callbacks)
+	SetCallback(kv.first, kv.second);
 }
 
 FSM::FSM(FSM const &fsm) :
@@ -271,6 +217,85 @@ std::shared_ptr<Error> FSM::BeforeEventCallbacks(Event &event) noexcept(false) {
 
 VisualizeResult FSM::Visualize(VisualizeType visualize_type) noexcept(false) {
   return ::fsm::Visualize(*this, visualize_type);
+}
+
+void FSM::SetCallback(const std::string &name, const Callback &callback) noexcept(false) {
+  WLockGuard state_mu_guard(state_mu_);
+  LockGuard event_mu_guard(event_mu_);
+
+  enum class type {
+	kNone,
+	kEvent,
+	kState
+  };
+
+  auto find = [&](const std::string &target) {
+	for (const auto &kv:transitions_) {
+	  if (kv.first.src_ == target || kv.second == target)
+		return type::kState;
+	  if (kv.first.event_ == target)
+		return type::kEvent;
+	}
+	return type::kNone;
+  };
+
+  auto is_event = [&](const std::string &target) {
+	return find(target) != type::kNone && find(target) != type::kState;
+  };
+
+  auto is_state = [&](const std::string &target) {
+	return find(target) != type::kNone && find(target) != type::kEvent;
+  };
+
+  std::string target{};
+  impl::CallbackType callback_type{};
+
+#if __cplusplus >= 201703L
+  auto helper = [&](std::string_view prefix) -> bool {
+#else
+  auto helper = [&](const std::string &prefix) -> bool {
+#endif
+	if (name.rfind(prefix) == 0) {
+	  target = name.substr(prefix.size());
+	  return true;
+	}
+	return false;
+  };
+
+  if (helper("before_")) {
+	if (target == "event") {
+	  target = "";
+	  callback_type = impl::CallbackType::kBeforeEvent;
+	} else if (is_event(target))
+	  callback_type = impl::CallbackType::kBeforeEvent;
+  } else if (helper("leave_")) {
+	if (target == "state") {
+	  target = "";
+	  callback_type = impl::CallbackType::kLeaveState;
+	} else if (is_state(target))
+	  callback_type = impl::CallbackType::kLeaveState;
+  } else if (helper("enter_")) {
+	if (target == "state") {
+	  target = "";
+	  callback_type = impl::CallbackType::kEnterState;
+	} else if (is_state(target))
+	  callback_type = impl::CallbackType::kEnterState;
+  } else if (helper("after_")) {
+	if (target == "event") {
+	  target = "";
+	  callback_type = impl::CallbackType::kAfterEvent;
+	} else if (is_event(target))
+	  callback_type = impl::CallbackType::kAfterEvent;
+  } else {
+	target = name;
+	if (is_state(target))
+	  callback_type = impl::CallbackType::kEnterState;
+	else if (is_event(target))
+	  callback_type = impl::CallbackType::kAfterEvent;
+  }
+
+  if (callback_type != impl::CallbackType::kNone)
+	callbacks_[impl::CKey{target, callback_type}] = callback;
 }
 
 namespace impl {
