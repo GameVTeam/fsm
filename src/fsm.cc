@@ -26,16 +26,12 @@ FSM::FSM(std::string initial,
 }
 
 FSM::FSM(FSM const &fsm) :
-	state_mu_(), event_mu_(),
 	current_(fsm.current_),
 	transitions_(fsm.transitions_),
 	callbacks_(fsm.callbacks_) {}
 
 std::shared_ptr<Error> FSM::FireEvent(const std::string &event,
 									  std::vector<std::any> args) noexcept(false) {
-  LockGuard event_mu_guard(event_mu_);
-  RLockGuard state_mu_guard(state_mu_);
-
   if (transition_)
 	return {std::make_shared<InTransitionError>(event)};
 
@@ -69,9 +65,7 @@ std::shared_ptr<Error> FSM::FireEvent(const std::string &event,
 
   // Setup the transition, call it later.
   transition_ = [=]() {
-	state_mu_.Lock();
 	current_ = dst;
-	state_mu_.Unlock();
 
 	EnterStateCallbacks(*event_obj);
 	AfterEventCallbacks(*event_obj);
@@ -86,9 +80,7 @@ std::shared_ptr<Error> FSM::FireEvent(const std::string &event,
   }
 
   // Perform the rest of the transition, if not asynchronous.
-  state_mu_.Unlock();
   err = DoTransition();
-  state_mu_.RLock();
 
   if (err)
 	return {std::make_shared<InternalError>()};
@@ -97,22 +89,18 @@ std::shared_ptr<Error> FSM::FireEvent(const std::string &event,
 }
 
 std::string FSM::Current() noexcept(false) {
-  RLockGuard guard(state_mu_);
   return current_;
 }
 
 bool FSM::Is(const std::string &state) noexcept(false) {
-  RLockGuard guard(state_mu_);
   return state == current_;
 }
 
 void FSM::SetState(std::string state) noexcept(false) {
-  WLockGuard guard(state_mu_);
   current_ = std::move(state);
 }
 
 bool FSM::Can(const std::string &event) noexcept(false) {
-  RLockGuard guard(state_mu_);
   return transitions_.find(impl::EKey{event, current_}) != transitions_.end() && !transition_;
 }
 
@@ -121,7 +109,6 @@ bool FSM::Cannot(const std::string &event) noexcept(false) {
 }
 
 std::vector<std::string> FSM::AvailableTransitions() noexcept(false) {
-  RLockGuard guard(state_mu_);
   std::vector<std::string> res{};
   for (const auto &kv:transitions_)
 	if (kv.first.src_ == current_)
@@ -130,7 +117,6 @@ std::vector<std::string> FSM::AvailableTransitions() noexcept(false) {
 }
 
 std::shared_ptr<Error> FSM::Transition() noexcept(false) {
-  LockGuard guard(event_mu_);
   return DoTransition();
 }
 
@@ -220,9 +206,6 @@ VisualizeResult FSM::Visualize(VisualizeType visualize_type) noexcept(false) {
 }
 
 void FSM::SetCallback(const std::string &name, const Callback &callback) noexcept(false) {
-  WLockGuard state_mu_guard(state_mu_);
-  LockGuard event_mu_guard(event_mu_);
-
   enum class type {
 	kNone,
 	kEvent,
@@ -304,7 +287,6 @@ std::shared_ptr<Error> TransitionerClass::Transition(FSM &machine) noexcept(fals
 	return {std::make_shared<NotInTransitionError>()};
   }
   machine.transition_();
-  WLockGuard guard(machine.state_mu_);
   machine.transition_ = nullptr;
   return {};
 }
@@ -312,7 +294,7 @@ std::shared_ptr<Error> TransitionerClass::Transition(FSM &machine) noexcept(fals
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 size_t CKey::Hasher::operator()(const CKey &key) const noexcept(false) {
-  return (std::hash<std::string>()(key.target_) ^ (std::hash<CallbackType>()(key.callback_type_) << 1)) >> 1;
+  return (std::hash<std::string>()(key.target_) ^ (int(key.callback_type_) << 1)) >> 1;
 }
 #pragma clang diagnostic pop
 

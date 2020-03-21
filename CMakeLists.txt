@@ -12,8 +12,8 @@ ENDIF ()
 
 INCLUDE_DIRECTORIES(include)
 
-ADD_LIBRARY(fsm include/fsm/fsm.h include/fsm/events.h include/fsm/errors.h include/fsm/any.h include/fsm/locks.h
-			src/fsm.cc src/events.cc include/fsm/utils.h src/utils.cc src/locks.cc)
+ADD_LIBRARY(fsm include/fsm/fsm.h include/fsm/events.h include/fsm/errors.h include/fsm/any.h
+			src/fsm.cc src/events.cc include/fsm/utils.h src/utils.cc)
 
 FIND_PACKAGE(Threads REQUIRED)
 SET(FSM_LIB ${CMAKE_THREAD_LIBS_INIT} fsm ${CMAKE_THREAD_LIBS_INIT})
@@ -38,11 +38,6 @@ IF (BUILD_TESTS)
 	ENABLE_TESTING()
 
 	ADD_EXECUTABLE(fsm_test tests/fsm_tests.cc)
-	IF (MSVC OR NOT APPLE)
-		TARGET_LINK_LIBRARIES(fsm_test ${FSM_LIB} gtest_main gtest)
-	ELSE ()
-		TARGET_LINK_LIBRARIES(fsm_test ${FSM_LIB} gtest_maind gtestd)
-	ENDIF ()
-
+	TARGET_LINK_LIBRARIES(fsm_test ${FSM_LIB} gtest_main gtest)
 	ADD_TEST(NAME FSM_TEST COMMAND fsm_test)
 ENDIF ()

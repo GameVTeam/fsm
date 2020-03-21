@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "locks.h"
 #include "errors.h"
 #include "events.h"
 #include "utils.h"
@@ -134,12 +133,6 @@ class FSM {
 
   // transition_obj_ calls the FSM::Transition() function.
   std::shared_ptr<impl::Transitioner> transition_obj_;
-
-  // event_mu_ guards access to Event() and Transition().
-  std::mutex event_mu_{};
-
-  // state_mu_ guards access to the current state.
-  RWLock state_mu_{};
 
  public:
   // Construct a FSM from events and callbacks.
