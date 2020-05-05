@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-struct Off;
+class Off;
 
 struct Toggle : fsm::Event {};
 
