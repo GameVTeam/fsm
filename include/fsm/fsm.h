@@ -12,9 +12,9 @@
 #ifndef FSM_INCLUDE_FSM_FSM_H_
 #define FSM_INCLUDE_FSM_FSM_H_
 
-#if __cplusplus < 201103L
-#error "FSM requires C++11 support."
-#endif
+//#if __cplusplus < 201103L
+//#error "FSM requires C++11 support."
+//#endif
 
 #include <type_traits> // for std::result_of
 
